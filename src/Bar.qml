@@ -12,6 +12,7 @@ Variants {
   PanelWindow {
     required property var modelData
     screen: modelData
+    id: "bar"
 
     anchors {
       top: true
