@@ -51,19 +51,28 @@ Variants {
           model: SystemTray.items
           delegate: IconImage {
             required property SystemTrayItem modelData
+
+            id: root
             source: modelData.icon
             implicitSize: bar.implicitHeight / 2
 
             MouseArea {
               anchors.fill: parent
+
+              acceptedButtons: Qt.LeftButton | Qt.RightButton
               onClicked: (mouse) => {
                 if (mouse.button == Qt.LeftButton) {
-                  modelData.activate()
-                } else if (mouse.button == Qt.MiddleButton) {
-                  modelData.secondaryActivate()
-                } else if (mouse.button == Qt.RightButton) {
-                  modelData.display(QsWindow.window, mapToItem(QsWindow.window.contentItem,mouse.x, mouse.y).x, mapToItem(QsWindow.window.contentItem,mouse.x, mouse.y).y)
+                  modelData.activate();
+                } else if (modelData.hasMenu) {
+                  menu.open();
                 }
+              }
+
+              // TODO: proper position
+              QsMenuAnchor {
+                id: menu
+                menu: root.modelData.menu
+                anchor.window: this.QsWindow.window
               }
             }
           }
@@ -71,6 +80,7 @@ Variants {
 
         // Battery Indicator
         Text {
+          visible: UPower.displayDevice.ready
           text: `${Math.round(100 * UPower.displayDevice.percentage)}%`
           color: "white"
         }
