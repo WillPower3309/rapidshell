@@ -16,7 +16,9 @@
       packages = eachSystem (system: {
         default = nixpkgs.legacyPackages.${system}.writeShellApplication {
           name = "rapidshell";
-          text = "${nixpkgs.legacyPackages.${system}.quickshell}/bin/quickshell --path ${./src}";
+          text = ''
+            ${nixpkgs.legacyPackages.${system}.quickshell}/bin/quickshell --path ${./src} "$@"
+          '';
         };
       });
 
