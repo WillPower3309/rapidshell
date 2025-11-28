@@ -89,12 +89,34 @@ Variants {
           }
         }
 
-        // Battery Indicator
-        // TODO: material symbol
-        Text {
+        MaterialSymbol {
           visible: UPower.displayDevice.ready
-          text: `${Math.round(100 * UPower.displayDevice.percentage)}%`
-          color: "white"
+          icon: {
+            const batteryLevel = UPower.displayDevice.percentage;
+
+            if (batteryLevel >= 0.9) {
+              return "battery_android_full"
+            }
+            if (batteryLevel >= 0.75) {
+              return "battery_android_6"
+            }
+            if (batteryLevel >= 0.6) {
+              return "battery_android_5"
+            }
+            if (batteryLevel >= 0.5) {
+              return "battery_android_4"
+            }
+            if (batteryLevel >= 0.3) {
+              return "battery_android_3"
+            }
+            if (batteryLevel >= 0.2) {
+              return "battery_android_2"
+            }
+            if (batteryLevel >= 0.1) {
+              return "battery_android_1"
+            }
+            return "battery_android_alert"
+          }
         }
       }
     }
