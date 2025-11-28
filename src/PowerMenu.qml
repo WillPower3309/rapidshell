@@ -1,4 +1,5 @@
 import QtQuick
+import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
@@ -11,8 +12,12 @@ Scope {
 
     PanelWindow {
       id: launcher
-      color: Qt.rgba(0, 0, 0, 0.8)
-      anchors.right: true
+      anchors {
+        top: true
+        bottom: true
+        right: true
+      }
+      color: "black"
 
       //WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
@@ -20,13 +25,26 @@ Scope {
         anchors.fill: parent
         spacing: 8
 
-        Text {
-          text: "test1"
-          color: "white"
-        }
-        Text {
-          text: "test2"
-          color: "white"
+        Repeater {
+          model: [
+            [ "system-shutdown-symbolic", [ "systemctl", "poweroff" ] ],
+            [ "system-reboot-symbolic", [ "systemctl", "reboot" ] ],
+            [ "weather-clear-night-symbolic", [ "systemctl", "suspend" ] ],
+          ]
+          delegate: Button {
+            required property var modelData
+
+            Layout.alignment: Qt.AlignHCenter
+            icon.name: modelData[0]
+            icon.color: "white"
+            onClicked: Quickshell.execDetached(modelData[1]);
+
+            background: Rectangle {
+              implicitWidth: 40
+              implicitHeight: 40
+              color: "gray"
+            }
+          }
         }
 
         Keys.onEscapePressed: root.active = false;
