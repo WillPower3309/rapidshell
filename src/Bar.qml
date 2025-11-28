@@ -1,10 +1,13 @@
 import Quickshell
 import Quickshell.I3
+import Quickshell.Services.Pipewire
 import Quickshell.Services.SystemTray
 import Quickshell.Services.UPower
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
+import qs.Components
+import qs.Services
 
 Variants {
   model: Quickshell.screens
@@ -46,6 +49,14 @@ Variants {
         Layout.alignment: Qt.AlignRight
         spacing: 10
 
+        MaterialSymbol {
+          icon: Volume.sourceIcon
+        }
+
+        MaterialSymbol {
+          icon: Volume.sinkIcon
+        }
+
         // System Tray
         Repeater {
           model: SystemTray.items
@@ -79,6 +90,7 @@ Variants {
         }
 
         // Battery Indicator
+        // TODO: material symbol
         Text {
           visible: UPower.displayDevice.ready
           text: `${Math.round(100 * UPower.displayDevice.percentage)}%`
