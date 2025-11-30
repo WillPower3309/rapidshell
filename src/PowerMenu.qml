@@ -1,53 +1,72 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import qs.Components
 
 Scope {
   LazyLoader {
     id: root
     active: false
+    loading: true
 
     PanelWindow {
       id: launcher
-      anchors {
-        top: true
-        bottom: true
-        right: true
+
+      readonly property var options: [
+        [ "power_settings_new", [ "systemctl", "poweroff" ] ],
+        [ "replay", [ "systemctl", "reboot" ] ],
+        [ "moon_stars", [ "systemctl", "suspend" ] ],
+      ]
+
+      function execPowerOption(index: int) {
+        root.active = false;
+        Quickshell.execDetached(launcher.options[index][1]);
       }
+
+      anchors.right: true
       color: "black"
+      exclusionMode: ExclusionMode.Ignore
+      WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
-      //WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+      ListView {
+        id: list
 
-      ColumnLayout {
         anchors.fill: parent
         spacing: 8
 
-        Repeater {
-          model: [
-            [ "system-shutdown-symbolic", [ "systemctl", "poweroff" ] ],
-            [ "system-reboot-symbolic", [ "systemctl", "reboot" ] ],
-            [ "weather-clear-night-symbolic", [ "systemctl", "suspend" ] ],
-          ]
-          delegate: Button {
-            required property var modelData
+        focus: true
+        currentIndex: 0
+        keyNavigationWraps: true
+        Keys.onEscapePressed: root.active = false;
+        Keys.onReturnPressed: execPowerOption(list.currentIndex);
 
-            Layout.alignment: Qt.AlignHCenter
-            icon.name: modelData[0]
-            icon.color: "white"
-            onClicked: Quickshell.execDetached(modelData[1]);
-
-            background: Rectangle {
-              implicitWidth: 40
-              implicitHeight: 40
-              color: "gray"
-            }
-          }
+        preferredHighlightBegin: 0
+        preferredHighlightEnd: height
+        highlightRangeMode: ListView.ApplyRange
+        highlightMoveDuration: 80
+        highlight: Rectangle {
+          radius: width / 2
+          color: "gray"
         }
 
-        Keys.onEscapePressed: root.active = false;
+        model: options
+
+        delegate: MaterialSymbol {
+          required property var modelData
+          required property int index
+
+          icon: modelData[0]
+          Layout.alignment: Qt.AlignHCenter
+
+          MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            onEntered: list.currentIndex = index;
+            onClicked: execPowerOption(index);
+          }
+        }
       }
     }
   }
