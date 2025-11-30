@@ -12,15 +12,15 @@ import Quickshell.Widgets
 Scope {
   LazyLoader {
     id: root
-    loading: true
     active: false
+    loading: true
 
     PanelWindow {
       id: launcher
       color: "black"
       anchors.bottom: true
-      height: 700 // TODO: half screen height
-      width: 700 // TODO: third screen width
+      implicitHeight: 700 // TODO: half screen height
+      implicitWidth: 700 // TODO: third screen width
       exclusionMode: ExclusionMode.Ignore
       WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
@@ -65,8 +65,9 @@ Scope {
 
             MouseArea {
               anchors.fill: parent
-              onClicked: list.currentIndex = entry.index
-              onDoubleClicked: launcher.launchSelected()
+              hoverEnabled: true
+              onEntered: list.currentIndex = entry.index
+              onClicked: launcher.launchSelected()
             }
 
             Row {
