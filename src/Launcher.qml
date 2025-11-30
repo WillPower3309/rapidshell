@@ -12,17 +12,16 @@ import Quickshell.Widgets
 Scope {
   LazyLoader {
     id: root
+    loading: true
     active: false
 
     PanelWindow {
       id: launcher
-      color: Qt.rgba(0, 0, 0, 0.8)
-      anchors {
-        top: true
-        bottom: true
-        left: true
-        right: true
-      }
+      color: "black"
+      anchors.bottom: true
+      height: 700 // TODO: half screen height
+      width: 700 // TODO: third screen width
+      exclusionMode: ExclusionMode.Ignore
       WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
       property string query: ""
@@ -38,6 +37,63 @@ Scope {
         anchors.fill: parent
         spacing: 8
 
+        ListView {
+          id: list
+          Layout.fillWidth: true
+          Layout.fillHeight: true
+          clip: true
+          model: filtered.values
+          currentIndex: filtered.values.length > 0 ? 0 : -1
+          keyNavigationWraps: true
+
+          preferredHighlightBegin: 0
+          preferredHighlightEnd: height
+          highlightRangeMode: ListView.ApplyRange
+          highlightMoveDuration: 80
+          highlight: Rectangle {
+            radius: 4
+            opacity: 0.45
+            color: input.palette.highlight
+          }
+
+          delegate: Item {
+            id: entry
+            required property var modelData
+            required property int index
+            width: ListView.view.width
+            height: 36
+
+            MouseArea {
+              anchors.fill: parent
+              onClicked: list.currentIndex = entry.index
+              onDoubleClicked: launcher.launchSelected()
+            }
+
+            Row {
+              anchors.fill: parent
+              anchors.margins: 8
+              spacing: 10
+
+              IconImage {
+                source: Quickshell.iconPath(modelData.icon, true)
+                width: 23
+                height: 23
+              }
+              Text {
+                id: label
+                color: "white"
+                text: modelData.name
+                font.pointSize: 13
+                elide: Text.ElideRight
+                verticalAlignment: Text.AlignVCenter
+              }
+            }
+          }
+
+          // Enter also works while ListView has focus
+          Keys.onReturnPressed: launcher.launchSelected()
+        }
+
         RowLayout {
           IconImage {
             Layout.leftMargin: 10
@@ -50,6 +106,7 @@ Scope {
             id: input
             Layout.fillWidth: true
             placeholderText: "Run…"
+            placeholderTextColor: "gray"
             font.pixelSize: 18
             color: "white"
             focus: true
@@ -103,62 +160,6 @@ Scope {
               return allEntries.filter(d => d.name && d.name.toLowerCase().includes(q));
             }
           }
-        }
-
-        ListView {
-          id: list
-          Layout.fillWidth: true
-          Layout.fillHeight: true
-          clip: true
-          model: filtered.values
-          currentIndex: filtered.values.length > 0 ? 0 : -1
-          keyNavigationWraps: true
-          preferredHighlightBegin: 0
-          preferredHighlightEnd: height
-          highlightRangeMode: ListView.ApplyRange
-          highlightMoveDuration: 80
-          highlight: Rectangle {
-            radius: 4
-            opacity: 0.45
-            color: input.palette.highlight
-          }
-
-          delegate: Item {
-            id: entry
-            required property var modelData
-            required property int index
-            width: ListView.view.width
-            height: 36
-
-            MouseArea {
-              anchors.fill: parent
-              onClicked: list.currentIndex = entry.index
-              onDoubleClicked: launcher.launchSelected()
-            }
-
-            Row {
-              anchors.fill: parent
-              anchors.margins: 8
-              spacing: 10
-
-              IconImage {
-                source: Quickshell.iconPath(modelData.icon, true)
-                width: 23
-                height: 23
-              }
-              Text {
-                id: label
-                color: "white"
-                text: modelData.name
-                font.pointSize: 13
-                elide: Text.ElideRight
-                verticalAlignment: Text.AlignVCenter
-              }
-            }
-          }
-
-          // Enter also works while ListView has focus
-          Keys.onReturnPressed: launcher.launchSelected()
         }
       }
     }
