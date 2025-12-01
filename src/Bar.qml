@@ -23,8 +23,7 @@ Variants {
       right: true
     }
     implicitHeight: 30
-
-    color: "black"
+    color: "transparent"
 
     RowLayout {
       anchors.fill: parent

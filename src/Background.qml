@@ -10,6 +10,7 @@ Variants {
     required property ShellScreen modelData
     screen: modelData
     color: "black"
+    exclusionMode: ExclusionMode.Ignore
 
     anchors {
       top: true
@@ -20,10 +21,17 @@ Variants {
 
     WlrLayershell.layer: WlrLayer.Background
 
-    // TODO: offset image so it isn't vertically compressed by top bar
     ClippingWrapperRectangle {
       anchors.fill: parent
+      anchors.margins: 50
       radius: 15
+
+      // TODO: proper animation for pop in
+      NumberAnimation on anchors.margins {
+        to: 0
+        duration: 100
+      }
+
       Image {
         source: "assets/wallpaper.png"
       }
