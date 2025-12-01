@@ -22,8 +22,20 @@ Variants {
       left: true
       right: true
     }
-    implicitHeight: 30
     color: "transparent"
+    implicitHeight: 0
+
+    // Slide down animation on create (after delay to account for background animation)
+    Timer {
+      running: true
+      interval: 100
+      onTriggered: bar.implicitHeight = 30;
+    }
+    Behavior on implicitHeight {
+      NumberAnimation {
+        duration: 100
+      }
+    }
 
     RowLayout {
       anchors.fill: parent
