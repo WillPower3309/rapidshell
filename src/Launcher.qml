@@ -10,30 +10,39 @@ import Quickshell.Widgets
 // TODO: animation
 
 Scope {
-  LazyLoader {
+  PanelWindow {
     id: root
-    active: false
-    loading: true
+    color: "transparent"
+    visible: false
+    anchors.bottom: true
+    implicitHeight: 700 // TODO: half screen height
+    implicitWidth: 700 // TODO: third screen width
+    exclusionMode: ExclusionMode.Ignore
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
-    PanelWindow {
-      id: launcher
-      color: "black"
-      anchors.bottom: true
-      implicitHeight: 700 // TODO: half screen height
-      implicitWidth: 700 // TODO: third screen width
-      exclusionMode: ExclusionMode.Ignore
-      WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
+    property string query: ""
 
-      property string query: ""
+    function launchSelected() {
+      if (list.currentItem && list.currentItem.modelData) {
+        list.currentItem.modelData.execute();
+        root.visible = false;
+      }
+    }
 
-      function launchSelected() {
-        if (list.currentItem && list.currentItem.modelData) {
-          list.currentItem.modelData.execute();
-          root.active = false;
-        }
+    Item {
+      implicitHeight: 700
+      implicitWidth: 700
+
+      // Background
+      Rectangle {
+        anchors.fill: parent
+        color: "black"
+        topLeftRadius: 25
+        topRightRadius: 25
       }
 
       ColumnLayout {
+        anchors.margins: 15
         anchors.fill: parent
         spacing: 8
 
@@ -51,7 +60,7 @@ Scope {
           highlightRangeMode: ListView.ApplyRange
           highlightMoveDuration: 80
           highlight: Rectangle {
-            radius: 4
+            radius: 10
             opacity: 0.45
             color: input.palette.highlight
           }
@@ -67,7 +76,7 @@ Scope {
               anchors.fill: parent
               hoverEnabled: true
               onEntered: list.currentIndex = entry.index
-              onClicked: launcher.launchSelected()
+              onClicked: root.launchSelected()
             }
 
             Row {
@@ -92,7 +101,7 @@ Scope {
           }
 
           // Enter also works while ListView has focus
-          Keys.onReturnPressed: launcher.launchSelected()
+          Keys.onReturnPressed: root.launchSelected()
         }
 
         RowLayout {
@@ -115,7 +124,7 @@ Scope {
             padding: 15
 
             onTextChanged: {
-              launcher.query = text;
+              root.query = text;
               // reset selection to first item of the filtered list
               list.currentIndex = filtered.values.length > 0 ? 0 : -1;
             }
@@ -126,7 +135,7 @@ Scope {
             }
 
             // Quit
-            Keys.onEscapePressed: root.active = false;
+            Keys.onEscapePressed: root.visible = false;
             Keys.onPressed: event => {
               const ctrl = event.modifiers & Qt.ControlModifier;
               if (event.key == Qt.Key_Up || event.key == Qt.Key_P && ctrl) {
@@ -139,10 +148,10 @@ Scope {
                   list.currentIndex++;
               } else if ([Qt.Key_Return, Qt.Key_Enter].includes(event.key)) {
                 event.accepted = true;
-                launcher.launchSelected();
+                root.launchSelected();
               } else if (event.key == Qt.Key_C && ctrl) {
                 event.accepted = true;
-                root.active = false;
+                root.visible = false;
               }
             }
           }
@@ -153,7 +162,7 @@ Scope {
           id: filtered
           values: {
             const allEntries = [...DesktopEntries.applications.values];
-            const q = launcher.query.trim();
+            const q = root.query.trim();
 
             if (q === "") {
               return allEntries;
@@ -168,7 +177,7 @@ Scope {
 
   IpcHandler {
     target: "launcher"
-    function toggle(): void { root.active = !root.active; }
+    function toggle(): void { root.visible = !root.visible; }
   }
 }
 
