@@ -6,40 +6,50 @@ import Quickshell.Wayland
 import qs.Components
 
 Scope {
-  LazyLoader {
+  PanelWindow {
     id: root
-    active: false
-    loading: true
+    visible: false
 
-    PanelWindow {
-      id: launcher
+    color: "transparent"
+    anchors.right: true
+    implicitHeight: 200
+    implicitWidth: 50
+    exclusionMode: ExclusionMode.Ignore
+    WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
-      readonly property var options: [
-        [ "power_settings_new", [ "systemctl", "poweroff" ] ],
-        [ "replay", [ "systemctl", "reboot" ] ],
-        [ "moon_stars", [ "systemctl", "suspend" ] ],
-      ]
+    Item {
+      anchors.fill: parent
 
-      function execPowerOption(index: int) {
-        root.active = false;
-        Quickshell.execDetached(launcher.options[index][1]);
+      // Background
+      Rectangle {
+        anchors.fill: parent
+        color: "black"
+        topLeftRadius: 25
+        bottomLeftRadius: 25
       }
-
-      anchors.right: true
-      color: "black"
-      exclusionMode: ExclusionMode.Ignore
-      WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
       ListView {
         id: list
 
+        readonly property var options: [
+          [ "power_settings_new", [ "systemctl", "poweroff" ] ],
+          [ "replay", [ "systemctl", "reboot" ] ],
+          [ "moon_stars", [ "systemctl", "suspend" ] ],
+        ]
+
+        function execPowerOption(index: int) {
+          root.visible = false;
+          Quickshell.execDetached(options[index][1]);
+        }
+
         anchors.fill: parent
+        anchors.margins: 15
         spacing: 8
 
         focus: true
         currentIndex: 0
         keyNavigationWraps: true
-        Keys.onEscapePressed: root.active = false;
+        Keys.onEscapePressed: root.visible = false;
         Keys.onReturnPressed: execPowerOption(list.currentIndex);
 
         preferredHighlightBegin: 0
@@ -73,7 +83,7 @@ Scope {
 
   IpcHandler {
     target: "powermenu"
-    function toggle(): void { root.active = !root.active; }
+    function toggle(): void { root.visible = !root.visible; }
   }
 }
 
