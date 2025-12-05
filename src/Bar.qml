@@ -6,6 +6,7 @@ import Quickshell.Services.UPower
 import Quickshell.Widgets
 import QtQuick
 import QtQuick.Layouts
+import QtQuick.Shapes
 import qs.Components
 import qs.Services
 
@@ -14,8 +15,10 @@ Variants {
 
   PanelWindow {
     required property ShellScreen modelData
+    readonly property int contentHeight: 30
+    readonly property int radius: 15
     screen: modelData
-    id: "bar"
+    id: "root"
 
     anchors {
       top: true
@@ -23,111 +26,193 @@ Variants {
       right: true
     }
     color: "transparent"
-    implicitHeight: 0
+    implicitHeight: contentHeight + radius
 
-    // Slide down animation on create (after delay to account for background animation)
-    Timer {
-      running: true
-      interval: 100
-      onTriggered: bar.implicitHeight = 30;
-    }
-    Behavior on implicitHeight {
-      NumberAnimation {
-        duration: 100
-      }
-    }
+    Item {
+      id: "content"
 
-    RowLayout {
-      anchors.fill: parent
-      uniformCellSizes: true
-
-      // Workspace Indicator
-      Text {
-        text: I3.focusedWorkspace.number
-        color: "white"
-        Layout.leftMargin: 15
+      anchors {
+        top: parent.top
+        left: parent.left
+        right: parent.right
       }
 
-      // Clock
-      Text {
-        text: Time.time
-        color: "white"
-        Layout.alignment: Qt.AlignHCenter
+      implicitHeight: 0
+
+      // TODO: not invisible when implicitHeight = 0
+      // Slide down animation on create (after delay to account for background animation)
+      Timer {
+        running: true
+        interval: 100
+        onTriggered: content.implicitHeight = root.contentHeight;
+      }
+
+      Behavior on implicitHeight {
+        NumberAnimation {
+          duration: 100
+        }
+      }
+
+      Rectangle {
+        color: "black"
+        anchors.fill: parent
       }
 
       RowLayout {
-        Layout.rightMargin: 15
-        Layout.alignment: Qt.AlignRight
-        spacing: 10
+        anchors.fill: parent
+        anchors.leftMargin: root.radius
+        anchors.rightMargin: root.radius
 
-        MaterialSymbol {
-          icon: Volume.sourceIcon
+        uniformCellSizes: true
+
+        // Workspace Indicator
+        Text {
+          text: I3.focusedWorkspace.number
+          color: "white"
         }
 
-        MaterialSymbol {
-          icon: Volume.sinkIcon
+        // Clock
+        Text {
+          Layout.alignment: Qt.AlignHCenter
+          text: Time.time
+          color: "white"
         }
 
-        // System Tray
-        Repeater {
-          model: SystemTray.items
-          delegate: IconImage {
-            required property SystemTrayItem modelData
+        RowLayout {
+          Layout.alignment: Qt.AlignRight
+          spacing: 10
 
-            id: root
-            source: modelData.icon
-            implicitSize: bar.implicitHeight / 2
+          MaterialSymbol {
+            icon: Volume.sourceIcon
+          }
 
-            MouseArea {
-              anchors.fill: parent
+          MaterialSymbol {
+            icon: Volume.sinkIcon
+          }
 
-              acceptedButtons: Qt.LeftButton | Qt.RightButton
-              onClicked: (mouse) => {
-                if (mouse.button == Qt.LeftButton) {
-                  modelData.activate();
-                } else if (modelData.hasMenu) {
-                  menu.open();
+          // System Tray
+          Repeater {
+            model: SystemTray.items
+            delegate: IconImage {
+              required property SystemTrayItem modelData
+
+              id: root
+              source: modelData.icon
+              implicitSize: content.implicitHeight / 2
+
+              MouseArea {
+                anchors.fill: parent
+
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onClicked: (mouse) => {
+                  if (mouse.button == Qt.LeftButton) {
+                    modelData.activate();
+                  } else if (modelData.hasMenu) {
+                    menu.open();
+                  }
+                }
+
+                // TODO: proper position
+                QsMenuAnchor {
+                  id: menu
+                  menu: root.modelData.menu
+                  anchor.window: this.QsWindow.window
                 }
               }
+            }
+          }
 
-              // TODO: proper position
-              QsMenuAnchor {
-                id: menu
-                menu: root.modelData.menu
-                anchor.window: this.QsWindow.window
+          MaterialSymbol {
+            visible: UPower.displayDevice.ready
+            icon: {
+              const batteryLevel = UPower.displayDevice.percentage;
+
+              if (batteryLevel >= 0.9) {
+                return "battery_android_full"
               }
+              if (batteryLevel >= 0.75) {
+                return "battery_android_6"
+              }
+              if (batteryLevel >= 0.6) {
+                return "battery_android_5"
+              }
+              if (batteryLevel >= 0.5) {
+                return "battery_android_4"
+              }
+              if (batteryLevel >= 0.3) {
+                return "battery_android_3"
+              }
+              if (batteryLevel >= 0.2) {
+                return "battery_android_2"
+              }
+              if (batteryLevel >= 0.1) {
+                return "battery_android_1"
+              }
+              return "battery_android_alert"
             }
           }
         }
+      }
+    }
 
-        MaterialSymbol {
-          visible: UPower.displayDevice.ready
-          icon: {
-            const batteryLevel = UPower.displayDevice.percentage;
+    // Left Corner
+    Shape {
+      anchors {
+        top: content.bottom
+        left: parent.left
+      }
+      implicitHeight: root.radius
+      implicitWidth: root.radius
+      preferredRendererType: Shape.CurveRenderer
 
-            if (batteryLevel >= 0.9) {
-              return "battery_android_full"
-            }
-            if (batteryLevel >= 0.75) {
-              return "battery_android_6"
-            }
-            if (batteryLevel >= 0.6) {
-              return "battery_android_5"
-            }
-            if (batteryLevel >= 0.5) {
-              return "battery_android_4"
-            }
-            if (batteryLevel >= 0.3) {
-              return "battery_android_3"
-            }
-            if (batteryLevel >= 0.2) {
-              return "battery_android_2"
-            }
-            if (batteryLevel >= 0.1) {
-              return "battery_android_1"
-            }
-            return "battery_android_alert"
-          }
+      ShapePath {
+        strokeWidth: 0
+        fillColor: "black" // TODO: bar.color
+        pathHints: ShapePath.PathSolid & ShapePath.PathNonIntersecting
+
+        PathAngleArc {
+          moveToStart: false
+          centerX: root.radius
+          centerY: root.radius
+          radiusX: root.radius
+          radiusY: root.radius
+          startAngle: 180
+          sweepAngle: 90
+        }
+        PathLine {
+          x: 0
+          y: 0
+        }
+      }
+    }
+
+    // Right Corner
+    Shape {
+      anchors {
+        top: content.bottom
+        right: parent.right
+      }
+      implicitHeight: root.radius
+      implicitWidth: root.radius
+      preferredRendererType: Shape.CurveRenderer
+
+      ShapePath {
+        strokeWidth: 0
+        fillColor: "black"
+        pathHints: ShapePath.PathSolid & ShapePath.PathNonIntersecting
+
+        PathAngleArc {
+          moveToStart: false
+          centerX: 0
+          centerY: root.radius
+          radiusX: root.radius
+          radiusY: root.radius
+          startAngle: -90
+          sweepAngle: 90
+        }
+        PathLine {
+          x: root.radius
+          y: 0
         }
       }
     }
