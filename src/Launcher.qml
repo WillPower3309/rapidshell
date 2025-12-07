@@ -7,13 +7,11 @@ import Quickshell.Io
 import Quickshell.Wayland
 import Quickshell.Widgets
 
-// TODO: animation
-
 Scope {
   PanelWindow {
     id: root
     color: "transparent"
-    visible: false
+    visible: content.implicitHeight > 0
     anchors.bottom: true
     implicitHeight: 700 // TODO: half screen height
     implicitWidth: 700 // TODO: third screen width
@@ -22,16 +20,25 @@ Scope {
 
     property string query: ""
 
-    function launchSelected() {
-      if (list.currentItem && list.currentItem.modelData) {
-        list.currentItem.modelData.execute();
-        root.visible = false;
-      }
-    }
-
     Item {
-      implicitHeight: 700
-      implicitWidth: 700
+      id: content
+
+      function launchSelected() {
+        if (list.currentItem && list.currentItem.modelData) {
+          list.currentItem.modelData.execute();
+          content.implicitHeight = 0;
+        }
+      }
+
+      anchors.bottom: parent.bottom
+      implicitHeight: 0
+      implicitWidth: root.implicitWidth
+
+      Behavior on implicitHeight {
+        NumberAnimation {
+          duration: 100
+        }
+      }
 
       // Background
       Rectangle {
@@ -135,7 +142,7 @@ Scope {
             }
 
             // Quit
-            Keys.onEscapePressed: root.visible = false;
+            Keys.onEscapePressed: content.implicitHeight = 0;
             Keys.onPressed: event => {
               const ctrl = event.modifiers & Qt.ControlModifier;
               if (event.key == Qt.Key_Up || event.key == Qt.Key_P && ctrl) {
@@ -151,7 +158,7 @@ Scope {
                 root.launchSelected();
               } else if (event.key == Qt.Key_C && ctrl) {
                 event.accepted = true;
-                root.visible = false;
+                content.implicitHeight = 0;
               }
             }
           }
@@ -177,7 +184,7 @@ Scope {
 
   IpcHandler {
     target: "launcher"
-    function toggle(): void { root.visible = !root.visible; }
+    function toggle(): void { content.implicitHeight = content.implicitHeight ? 0 : root.implicitHeight; }
   }
 }
 

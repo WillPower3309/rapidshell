@@ -8,7 +8,7 @@ import qs.Components
 Scope {
   PanelWindow {
     id: root
-    visible: false
+    visible: content.width != 0
 
     color: "transparent"
     anchors.right: true
@@ -18,7 +18,18 @@ Scope {
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
     Item {
-      anchors.fill: parent
+      id: content
+
+      anchors.right: parent.right
+
+      implicitHeight: root.implicitHeight
+      implicitWidth: 0
+
+      Behavior on implicitWidth {
+        NumberAnimation {
+          duration: 100
+        }
+      }
 
       // Background
       Rectangle {
@@ -38,7 +49,7 @@ Scope {
         ]
 
         function execPowerOption(index: int) {
-          root.visible = false;
+          content.implicitWidth = 0;
           Quickshell.execDetached(options[index][1]);
         }
 
@@ -49,7 +60,7 @@ Scope {
         focus: true
         currentIndex: 0
         keyNavigationWraps: true
-        Keys.onEscapePressed: root.visible = false;
+        Keys.onEscapePressed: content.implicitWidth = 0;
         Keys.onReturnPressed: execPowerOption(list.currentIndex);
 
         preferredHighlightBegin: 0
@@ -83,7 +94,7 @@ Scope {
 
   IpcHandler {
     target: "powermenu"
-    function toggle(): void { root.visible = !root.visible; }
+    function toggle(): void { content.implicitWidth = content.implicitWidth ? 0 : root.implicitWidth; }
   }
 }
 
