@@ -85,7 +85,7 @@ Scope {
             anchors.fill: parent
             hoverEnabled: true
             onEntered: list.currentIndex = index;
-            onClicked: execPowerOption(index);
+            onClicked: list.execPowerOption(index);
           }
         }
       }

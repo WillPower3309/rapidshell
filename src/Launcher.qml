@@ -10,6 +10,16 @@ import Quickshell.Widgets
 Scope {
   PanelWindow {
     id: root
+
+    property string query: ""
+
+    function launchSelected() {
+      if (list.currentItem && list.currentItem.modelData) {
+        list.currentItem.modelData.execute();
+        content.implicitHeight = 0;
+      }
+    }
+
     color: "transparent"
     visible: content.implicitHeight > 0
     anchors.bottom: true
@@ -18,17 +28,8 @@ Scope {
     exclusionMode: ExclusionMode.Ignore
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
-    property string query: ""
-
     Item {
       id: content
-
-      function launchSelected() {
-        if (list.currentItem && list.currentItem.modelData) {
-          list.currentItem.modelData.execute();
-          content.implicitHeight = 0;
-        }
-      }
 
       anchors.bottom: parent.bottom
       implicitHeight: 0
