@@ -6,5 +6,6 @@ Scope {
   Background {}
   Launcher {}
   PowerMenu {}
+  Notifications {}
 }
 
