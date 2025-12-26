@@ -26,6 +26,7 @@ Variants {
       right: true
     }
     color: "transparent"
+    exclusiveZone: contentHeight
     implicitHeight: contentHeight + radius
 
     Item {
