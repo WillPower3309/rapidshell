@@ -16,6 +16,13 @@ Scope {
     }
   }
 
+  // remove notifications after a couple seconds
+  Timer {
+    interval: 2000
+    running: server.notifications.length > 0
+    onTriggered: server.notifications.pop()
+  }
+
   PanelWindow {
     visible: server.notifications.length > 0
     color: "black"
